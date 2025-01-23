@@ -17,6 +17,7 @@ module vgaout
 	output reg hs,
 	output reg vs,
 	output reg de,
+	output reg ce_pix,
 	output reg [1:0] b,
 	output reg [1:0] r,
 	output reg [1:0] g
@@ -68,46 +69,48 @@ hexnum digs
 wire mpix = ({xr[2],xr[1]|xr[0]} <= 2) && ((vcount>>3) == (VREZ4>>3)) && r4[7];
 
 always @(posedge clk) begin
+	ce_pix <= ~ce_pix;
+	if(ce_pix) begin
+		if (hcount==HMAX) hcount <= 9'd0;
+			else hcount <= hcount + 9'd1;
 
-	if (hcount==HMAX) hcount <= 9'd0;
-		else hcount <= hcount + 9'd1;
+		if (hcount==HSCRN_END) begin
+			hscr <= 1'b0;
+			de <= 0;
+		end else if (hcount==HSCRN_BEG) begin
+			hscr <= 1'b1;
+			de <= vscr;
+		end
 
-	if (hcount==HSCRN_END) begin
-		hscr <= 1'b0;
-		de <= 0;
-	end else if (hcount==HSCRN_BEG) begin
-		hscr <= 1'b1;
-		de <= vscr;
-	end
+		if (hcount==HSYNC_BEG) begin
+			nextline <= 1'b1;
+			hs <= 1'b0;                  // negative H-sync
+		end
+		else
+		begin
+			nextline <= 1'b0;
+			if (hcount==HSYNC_END)
+				hs <= 1'b1;
+		end
 
-	if (hcount==HSYNC_BEG) begin
-		nextline <= 1'b1;
-		hs <= 1'b0;                  // negative H-sync
-	end
-	else
-	begin
-		nextline <= 1'b0;
-		if (hcount==HSYNC_END)
-			hs <= 1'b1;
-	end
-
-	if (hcount==HREZ) begin
-		xr <= 6'd0;
-		r1 <= rez1;
-		r2 <= rez2;
-		r3 <= {elapsed, freq};
-		r4 <= mark;
-	end
-	else if ( (!hcount[2:0]) && (xr!=6'h3f) ) begin
-		xr <= xr + 6'd1;
-		if (xr[2:0]==3'd7) begin
-			r1[31:4] <= r1[27:0];
-			r2[31:4] <= r2[27:0];
-			r3[31:4] <= r3[27:0];
-			r4[7:1]  <= r4[6:0];
+		if (hcount==HREZ) begin
+			xr <= 6'd0;
+			r1 <= rez1;
+			r2 <= rez2;
+			r3 <= {elapsed, freq};
+			r4 <= mark;
+		end
+		else if ( (!hcount[2:0]) && (xr!=6'h3f) ) begin
+			xr <= xr + 6'd1;
+			if (xr[2:0]==3'd7) begin
+				r1[31:4] <= r1[27:0];
+				r2[31:4] <= r2[27:0];
+				r3[31:4] <= r3[27:0];
+				r4[7:1]  <= r4[6:0];
+			end
 		end
 	end
-
+	
 	if (nextline) begin
 		if (vcount==VMAX)
 			vcount <= 9'd0;
