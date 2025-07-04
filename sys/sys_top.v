@@ -866,6 +866,9 @@ reg [11:0] vmax;
 reg [11:0] hdmi_height;
 reg [11:0] hdmi_width;
 
+wire [11:0] emu_hdmi_width = direct_video ? 12'd0 : hdmi_width;
+wire [11:0] emu_hdmi_height = direct_video ? 12'd0 : hdmi_height;
+
 reg [11:0] arx;
 reg [11:0] ary;
 reg        arxy;
@@ -1736,8 +1739,8 @@ emu emu
 	.VGA_DISABLE(VGA_DISABLE),
 `endif
 
-	.HDMI_WIDTH(direct_video ? 12'd0 : hdmi_width),
-	.HDMI_HEIGHT(direct_video ? 12'd0 : hdmi_height),
+	.HDMI_WIDTH(emu_hdmi_width),
+	.HDMI_HEIGHT(emu_hdmi_height),
 	.HDMI_FREEZE(freeze),
 	.HDMI_BLACKOUT(hdmi_blackout),
 	.HDMI_BOB_DEINT(bob_deint),

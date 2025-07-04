@@ -578,8 +578,11 @@ assign VGA_B  = {4{b}};
 assign VGA_R  = {4{r}};
 assign VGA_G  = {4{g}};
 
-assign HDMI_WIDTH = 12'd0;
-assign HDMI_HEIGHT = 12'd0;
+wire [11:0] hdmi_width = 12'd0;
+wire [11:0] hdmi_height = 12'd0;
+
+assign HDMI_WIDTH = hdmi_width;
+assign HDMI_HEIGHT = hdmi_height;
 assign HDMI_FREEZE = 1'b0;
 assign HDMI_BLACKOUT = 1'b0;
 assign HDMI_BOB_DEINT = 1'b0;
