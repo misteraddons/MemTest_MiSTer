@@ -29,7 +29,7 @@ module emu
 	input         RESET,
 
 	//Must be passed to hps_io module
-	inout  [45:0] HPS_BUS,
+	inout  [48:0] HPS_BUS,
 
 	//Base video clock. Usually equals to CLK_SYS.
 	output        CLK_VIDEO,
@@ -51,6 +51,13 @@ module emu
 	output        VGA_F1,
 	output [1:0]  VGA_SL,
 	output        VGA_SCALER, // Force VGA scaler
+
+	//HDMI output control
+	output [11:0] HDMI_WIDTH,
+	output [11:0] HDMI_HEIGHT,
+	output        HDMI_FREEZE,
+	output        HDMI_BLACKOUT,
+	output        HDMI_BOB_DEINT,
 
 `ifdef USE_FB
 	// Use framebuffer in DDRAM (USE_FB=1 in qsf)
@@ -138,7 +145,22 @@ module emu
 	output        SDRAM_nWE,
 `endif
 
-`ifdef DUAL_SDRAM
+`ifdef MISTER_DUAL_SDRAM
+	//Primary SDRAM interface for dual SDRAM configuration
+	output        SDRAM_CLK,
+	output        SDRAM_CKE,
+	output [12:0] SDRAM_A,
+	output  [1:0] SDRAM_BA,
+	inout  [15:0] SDRAM_DQ,
+	output        SDRAM_DQML,
+	output        SDRAM_DQMH,
+	output        SDRAM_nCS,
+	output        SDRAM_nCAS,
+	output        SDRAM_nRAS,
+	output        SDRAM_nWE,
+`endif
+
+`ifdef MISTER_DUAL_SDRAM
 	//Secondary SDRAM
 	input         SDRAM2_EN,
 	output        SDRAM2_CLK,
@@ -209,12 +231,11 @@ wire [15:0] joystick_0;
 wire  [1:0] sdram_sz;
 reg   [1:0] sdram_chip = 2'h0;
 
-hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
+hps_io #(.CONF_STR(CONF_STR), .STRLEN($size(CONF_STR)>>3)) hps_io
 (
 	.clk_sys(CLK_50M),
 	.HPS_BUS(HPS_BUS),
 
-	.conf_str(CONF_STR),
 	.status(status),
 	.buttons(buttons),
 	.sdram_sz(sdram_sz),
@@ -556,5 +577,11 @@ assign VGA_VS = ~vs;
 assign VGA_B  = {4{b}};
 assign VGA_R  = {4{r}};
 assign VGA_G  = {4{g}};
+
+assign HDMI_WIDTH = 12'd0;
+assign HDMI_HEIGHT = 12'd0;
+assign HDMI_FREEZE = 1'b0;
+assign HDMI_BLACKOUT = 1'b0;
+assign HDMI_BOB_DEINT = 1'b0;
 
 endmodule
